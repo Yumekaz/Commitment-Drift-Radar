@@ -1,59 +1,106 @@
 # Commitment Drift Radar
 
-Commitment Drift Radar is a Coral-powered enterprise agent for spotting customer promises that are drifting away from engineering reality.
+Commitment Drift Radar is a Coral-powered risk dashboard for teams that make customer commitments before the engineering work is fully shipped.
 
-It answers one operational question:
+It finds promises that are drifting away from reality by joining customer commitments with engineering tickets, pull requests, support pressure, blocker messages, revenue, and rollout state.
 
-> Which committed customer outcomes are now risky because tickets, pull requests, blockers, support pressure, revenue, and rollout state disagree?
+## The Problem
 
-## Why This Matters
+In B2B product teams, a customer promise might live in a spreadsheet, while the actual delivery state is spread across Linear or Jira, GitHub, Slack, Intercom, Stripe, and LaunchDarkly.
 
-Customer commitments often live in a spreadsheet or CRM note. The real delivery state is scattered across Linear/Jira, GitHub, Slack, Intercom, Stripe, and LaunchDarkly. By the time a founder, PM, or support lead notices the drift, the customer is already frustrated.
+That split creates a dangerous blind spot:
 
-This project turns that scattered evidence into a ranked risk board with an evidence pack for each promise.
+```text
+Sales or success promised something.
+Engineering reality changed.
+Support pressure increased.
+Revenue risk grew.
+Nobody saw the full picture early enough.
+```
+
+Commitment Drift Radar turns that scattered evidence into one ranked view.
+
+## What The App Shows
+
+The dashboard highlights:
+
+- which customer commitments are at risk
+- why each commitment is risky
+- which systems contributed evidence
+- whether the public app is using sample data or live Coral output
+- the exact Coral SQL query used for the live data path
+
+Each risk row can be opened into an evidence pack showing the promise date, engineering status, pull request state, Slack blocker signal, support pressure, revenue impact, and rollout flag state.
 
 ## How Coral Is Used
 
-Coral is the core data and retrieval layer.
+Coral is the intended live data and retrieval layer for this project.
 
-In live mode, the backend runs this exact command:
+In live mode, the backend does not manually call GitHub, Slack, Stripe, Intercom, Linear, or LaunchDarkly APIs. It calls the official Coral CLI:
 
 ```bash
 coral sql -f coral/queries/commitment_risk.sql --format json
 ```
 
-That SQL query joins Coral tables from multiple tools:
+The SQL query joins these Coral tables:
 
-| Source | Coral table | Why it matters |
+| Data source | Coral table used by the query | Purpose |
 | --- | --- | --- |
-| Customer promises CSV/file source | `commitments.customer_promises` | The customer, feature, due date, and join keys |
-| Linear/Jira | `linear.issues` | Engineering status for the promised work |
-| GitHub | `github.pulls` | Whether implementation evidence exists |
+| Customer promise ledger | `commitments.customer_promises` | Customer, feature, due date, and join keys |
+| Linear/Jira | `linear.issues` | Engineering delivery state |
+| GitHub | `github.pulls` | Implementation and merge evidence |
 | Slack | `slack.messages` | Blocker and delay signals |
-| Intercom | `intercom.conversations` | Open customer pressure |
+| Intercom | `intercom.conversations` | Customer support pressure |
 | Stripe | `stripe.invoices` | Revenue impact |
-| LaunchDarkly | `launchdarkly.feature_flags` | Whether the feature is actually enabled |
+| LaunchDarkly | `launchdarkly.feature_flags` | Whether the feature reached the customer |
 
-The Python backend does not manually call those provider APIs. It either:
+The core query is in:
 
-- runs Coral SQL in live mode, or
-- uses local demo CSVs to simulate the same joined result when private credentials are not available.
+```text
+coral/queries/commitment_risk.sql
+```
 
-## Current Capabilities
+The Python wrapper that runs Coral live mode is:
 
-- `python run.py` starts a local web app and API.
-- Demo mode loads sample CSVs from `data/demo/`.
-- `/api/risks` returns ranked commitment-risk rows.
-- `/api/evidence/<feature_key>` returns the explanation and joined evidence for one row.
-- Live Coral mode calls `coral sql -f coral/queries/commitment_risk.sql --format json`.
-- The dashboard shows the Coral command, source list, risk board, metrics, and evidence panel.
+```text
+backend/coral_client.py
+```
 
-## Demo Mode
+## Public Demo Versus Live Coral Mode
 
-Demo mode is for local review without private Linear, GitHub, Slack, Intercom, Stripe, or LaunchDarkly credentials.
+The public deployment is intentionally safe to open without private company credentials.
+
+By default, it runs in demo mode:
+
+```text
+COMMITMENT_RADAR_MODE=demo
+```
+
+Demo mode uses sample CSV files from:
+
+```text
+data/demo/
+```
+
+That means the deployed demo is not claiming to pull live GitHub, Slack, Stripe, Intercom, Linear, or LaunchDarkly data. It uses a sample dataset to demonstrate the workflow.
+
+Live Coral mode is different:
+
+```text
+COMMITMENT_RADAR_MODE=coral
+```
+
+In live mode, the backend executes:
 
 ```bash
-cd commitment_drift_radar_v2
+coral sql -f coral/queries/commitment_risk.sql --format json
+```
+
+If the Coral CLI is missing, or if the required Coral sources are not configured, the app returns an explicit error instead of silently falling back to sample data.
+
+## Try The Demo Locally
+
+```bash
 python run.py
 ```
 
@@ -63,43 +110,31 @@ Open:
 http://127.0.0.1:8080
 ```
 
-Demo mode is the default. It uses:
+The dashboard will show:
 
-```text
-data/demo/commitments.csv
-data/demo/linear_issues.csv
-data/demo/github_pulls.csv
-data/demo/slack_messages.csv
-data/demo/intercom_conversations.csv
-data/demo/stripe_invoices.csv
-data/demo/launchdarkly_flags.csv
-```
+- `DEMO MODE / SAMPLE DATA`
+- current data mode
+- source table list
+- the Coral SQL command
+- a `Show SQL joins` button that reveals the query used by live mode
 
-Important: demo mode simulates the joined Coral output so the product can be reviewed without private credentials. It is not presented as live Coral retrieval.
+## Run With Live Coral
 
-The deployed public app is expected to show this sample dataset unless live Coral credentials are configured. The dashboard exposes the current data mode and the exact SQL query path so reviewers can tell whether they are looking at sample CSV output or live Coral output.
+Install and configure Coral from the official `withcoral/coral` project, then configure the sources required by `coral/queries/commitment_risk.sql`.
 
-## Live Coral Mode
-
-Install and configure Coral, then add the sources required by the query.
-
-```bash
-coral source discover
-coral source add --interactive github
-coral source add --interactive linear
-coral source add --interactive slack
-coral source add --interactive stripe
-coral source add --interactive intercom
-coral source add --interactive launchdarkly
-```
-
-Configure the customer commitments CSV/file source so it is available as:
+At minimum, the query expects these table names to exist:
 
 ```text
 commitments.customer_promises
+linear.issues
+github.pulls
+slack.messages
+intercom.conversations
+stripe.invoices
+launchdarkly.feature_flags
 ```
 
-Run live mode:
+Then run:
 
 ```bash
 COMMITMENT_RADAR_MODE=coral python run.py
@@ -112,37 +147,41 @@ $env:COMMITMENT_RADAR_MODE = "coral"
 python run.py
 ```
 
-Manual Coral proof command:
+You can also run the Coral query directly:
 
 ```bash
 coral sql -f coral/queries/commitment_risk.sql --format json
 ```
 
-If Coral is not installed or a source is missing, the app returns a clear backend error instead of silently falling back and pretending.
-
-## Core SQL Query
-
-The main query lives here:
+## API Endpoints
 
 ```text
-coral/queries/commitment_risk.sql
+GET /api/health
 ```
 
-It is structured as:
+Returns app mode, Coral command, source table names, and data provenance.
 
-1. Aggregate support pressure from Intercom.
-2. Aggregate paid revenue from Stripe.
-3. Find blocker language in Slack.
-4. Match GitHub PRs to the Linear/Jira key or feature key.
-5. Read LaunchDarkly rollout state.
-6. Join everything to the customer promise ledger.
-7. Emit a risk level: `CRITICAL`, `HIGH`, `MEDIUM`, or `LOW`.
+```text
+GET /api/risks
+```
 
-## Deploy
+Returns ranked commitment-risk rows.
 
-### Render With Docker
+```text
+GET /api/evidence/<feature_key>
+```
 
-This repo includes:
+Returns a single commitment with an explanation and recommended action.
+
+```text
+GET /api/coral-query
+```
+
+Returns the SQL query that live Coral mode executes.
+
+## Deployment
+
+This repo includes Docker and Render support:
 
 ```text
 Dockerfile
@@ -150,34 +189,46 @@ render.yaml
 requirements.txt
 ```
 
-For a credential-free deployment, use demo mode:
-
-```bash
-docker build -t commitment-drift-radar .
-docker run -p 8080:8080 -e COMMITMENT_RADAR_HOST=0.0.0.0 commitment-drift-radar
-```
-
-Render can deploy directly from `render.yaml`. The default deployment runs in demo mode because hosted live Coral mode needs provider credentials and a Coral CLI installation in the runtime image.
-
-For live Coral deployment, install Coral in the image or runtime, configure source credentials as secrets, and set:
+The included Render configuration deploys demo mode by default:
 
 ```text
-COMMITMENT_RADAR_MODE=coral
-COMMITMENT_RADAR_HOST=0.0.0.0
+COMMITMENT_RADAR_MODE=demo
 ```
+
+That is intentional for a public deployment. To deploy live Coral mode, the runtime also needs the Coral CLI and real source credentials configured as deployment secrets.
 
 ## Project Structure
 
 ```text
-backend/                  Python HTTP server, Coral adapter, demo engine, scoring, explainer
-coral/queries/             Coral SQL queries
-coral/source_specs/        Example customer-promises source shape
-data/demo/                 Credential-free demo CSVs
-static/                    Dashboard UI
-Dockerfile                 Container deployment
-render.yaml                Render deployment blueprint
+backend/
+  app_server.py          HTTP server and API routes
+  coral_client.py        Live Coral CLI wrapper
+  demo_engine.py         Sample CSV join engine for public demo mode
+  explainer.py           Evidence explanation and recommended action
+  risk.py                Risk scoring and ranking
+
+coral/
+  queries/
+    commitment_risk.sql  Main cross-source Coral query
+    evidence_pack.sql    Supporting evidence query
+    blocker_scan.sql     Slack blocker query
+  source_specs/
+    customer_promises.example.yml
+
+data/demo/               Sample dataset used by demo mode
+static/                  Browser dashboard
 ```
 
-## Enterprise Agent Use Case
+## What This Project Is Not
 
-Commitment Drift Radar is an enterprise workflow agent for customer-success, product, engineering, and founder teams. Coral gives it cross-source SQL retrieval; the app turns the joined result into ranked risk, evidence, and recommended action.
+This is not a static dashboard with Coral branding pasted on top. The live path is a real `coral sql` execution path.
+
+This is also not claiming that the public deployment has access to private production accounts. The public deployment uses sample data so the product can be tested safely.
+
+The important architecture is:
+
+```text
+Coral SQL joins cross-source data
+-> backend ranks and explains risk
+-> dashboard shows evidence and action
+```

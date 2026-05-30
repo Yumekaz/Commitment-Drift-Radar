@@ -18,7 +18,7 @@ class CoralClient:
         if not sql_path.exists():
             raise FileNotFoundError(f"SQL file not found: {sql_path}")
 
-        cmd = ["coral", "sql", "-f", str(sql_path), "--format", "json"]
+        cmd = ["coral", "sql", "-f", relative_sql_path, "--format", "json"]
 
         try:
             completed = subprocess.run(
@@ -46,7 +46,7 @@ class CoralClient:
         except json.JSONDecodeError:
             raise RuntimeError(
                 "Coral returned non-JSON output. Try running the query manually:\n"
-                f"coral sql -f {sql_path} --format json\n\n"
+                f"coral sql -f {relative_sql_path} --format json\n\n"
                 f"Output:\n{completed.stdout[:1000]}"
             )
 

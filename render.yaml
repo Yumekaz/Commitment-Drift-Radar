@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: commitment-drift-radar
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: COMMITMENT_RADAR_MODE
+        value: demo
+      - key: COMMITMENT_RADAR_HOST
+        value: 0.0.0.0

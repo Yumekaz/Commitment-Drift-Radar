@@ -6,7 +6,7 @@ from pathlib import Path
 class DemoEngine:
     """Local demo engine that simulates Coral's joined result using CSVs.
 
-    This is only for hackathon demos when credentials are unavailable.
+    This is only for local demos when credentials are unavailable.
     In live mode, use CoralClient instead.
     """
 

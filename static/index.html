@@ -7,20 +7,48 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <header class="hero">
-    <div>
+  <header class="topbar">
+    <div class="brand-block">
       <p class="eyebrow">Coral-powered enterprise agent</p>
       <h1>Commitment Drift Radar</h1>
       <p class="subtitle">Find customer promises drifting away from engineering reality before they become escalations.</p>
     </div>
-    <div class="hero-card">
-      <span id="mode-pill">checking...</span>
-      <strong>Cross-source risk radar</strong>
-      <small>commitments + Linear + GitHub + Slack + Intercom + Stripe + LaunchDarkly</small>
+    <div class="run-status">
+      <span id="mode-pill" class="mode-pill">checking...</span>
+      <strong id="health-title">Backend starting</strong>
+      <small id="health-detail">Waiting for /api/health</small>
     </div>
   </header>
 
   <main>
+    <section class="summary-grid" aria-label="Risk summary">
+      <div class="metric">
+        <span>Open promises</span>
+        <strong id="metric-total">-</strong>
+      </div>
+      <div class="metric critical">
+        <span>Critical drift</span>
+        <strong id="metric-critical">-</strong>
+      </div>
+      <div class="metric high">
+        <span>High risk</span>
+        <strong id="metric-high">-</strong>
+      </div>
+      <div class="metric revenue">
+        <span>Revenue in view</span>
+        <strong id="metric-revenue">-</strong>
+      </div>
+    </section>
+
+    <section class="coral-query">
+      <div>
+        <p class="eyebrow">Coral-powered cross-source query</p>
+        <h2>One SQL query joins customer promises to engineering, support, revenue, blockers, PRs, and rollout state.</h2>
+      </div>
+      <code id="coral-command">coral sql -f coral/queries/commitment_risk.sql --format json</code>
+      <div id="source-list" class="source-list"></div>
+    </section>
+
     <section class="toolbar">
       <input id="search" placeholder="Search customers, features, issue IDs..." />
       <select id="riskFilter">
@@ -58,8 +86,11 @@
       </div>
 
       <aside class="panel">
-        <h2>Evidence pack</h2>
-        <div id="evidence" class="evidence muted">Click a row to inspect joined evidence.</div>
+        <div class="panel-header">
+          <h2>Evidence pack</h2>
+          <span class="mini-label">joined by Coral</span>
+        </div>
+        <div id="evidence" class="evidence muted">Select a risk row to inspect the joined evidence behind the score.</div>
       </aside>
     </section>
   </main>

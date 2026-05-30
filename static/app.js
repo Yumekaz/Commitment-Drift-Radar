@@ -1,10 +1,22 @@
 let allRows = [];
+let health = {};
 
 async function loadHealth() {
   const res = await fetch("/api/health");
   const data = await res.json();
+  health = data;
   const pill = document.getElementById("mode-pill");
   pill.textContent = data.coral_live ? "LIVE CORAL MODE" : "DEMO MODE";
+  document.getElementById("health-title").textContent = data.coral_live
+    ? "Live Coral query path"
+    : "Demo data path";
+  document.getElementById("health-detail").textContent = data.coral_live
+    ? "Backend is executing Coral SQL."
+    : "Local CSVs simulate the joined Coral result for credential-free review.";
+  document.getElementById("coral-command").textContent = data.coral_command;
+  document.getElementById("source-list").innerHTML = (data.sources || [])
+    .map(source => `<span>${escapeHtml(source)}</span>`)
+    .join("");
 }
 
 async function loadRisks() {
@@ -16,7 +28,18 @@ async function loadRisks() {
     return;
   }
   allRows = data.rows || [];
+  renderMetrics(allRows);
   renderRows();
+}
+
+function renderMetrics(rows) {
+  const totalRevenue = rows.reduce((sum, row) => sum + Number(row.paid_last_90_days || 0), 0);
+  document.getElementById("metric-total").textContent = String(rows.length);
+  document.getElementById("metric-critical").textContent =
+    String(rows.filter(row => row.risk_level === "CRITICAL").length);
+  document.getElementById("metric-high").textContent =
+    String(rows.filter(row => row.risk_level === "HIGH").length);
+  document.getElementById("metric-revenue").textContent = `$${Math.round(totalRevenue).toLocaleString()}`;
 }
 
 function renderRows() {
@@ -27,9 +50,15 @@ function renderRows() {
     return (!filter || row.risk_level === filter) && (!term || blob.includes(term));
   });
 
-  document.getElementById("riskRows").innerHTML = rows.map(row => `
-    <tr onclick="loadEvidence('${escapeAttr(row.feature_key)}')">
-      <td><span class="badge ${row.risk_level}">${row.risk_level} · ${row.risk_score}</span></td>
+  const body = document.getElementById("riskRows");
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="8">No commitments match the current filters.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(row => `
+    <tr data-feature-key="${escapeAttr(row.feature_key)}" tabindex="0">
+      <td><span class="badge ${row.risk_level}">${row.risk_level} / ${row.risk_score}</span></td>
       <td>${escapeHtml(row.customer_name)}</td>
       <td>${escapeHtml(row.feature_name)}</td>
       <td>${escapeHtml(row.promised_date)}</td>
@@ -39,6 +68,16 @@ function renderRows() {
       <td>${String(row.rollout_enabled).toLowerCase() === "true" ? "Enabled" : "Not enabled"}</td>
     </tr>
   `).join("");
+
+  body.querySelectorAll("tr[data-feature-key]").forEach(rowEl => {
+    rowEl.addEventListener("click", () => loadEvidence(rowEl.dataset.featureKey));
+    rowEl.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        loadEvidence(rowEl.dataset.featureKey);
+      }
+    });
+  });
 }
 
 async function loadEvidence(featureKey) {
@@ -53,16 +92,25 @@ async function loadEvidence(featureKey) {
   const exp = data.explanation;
   document.getElementById("evidence").innerHTML = `
     <h3>${escapeHtml(exp.summary)}</h3>
-    <p><strong>Recommended action:</strong> ${escapeHtml(exp.recommended_action)}</p>
-    <h4>Joined evidence</h4>
-    <ul>
+    <div class="action-box">
+      <span>Recommended action</span>
+      <strong>${escapeHtml(exp.recommended_action)}</strong>
+    </div>
+    <h4>Why this is risky</h4>
+    <ul class="reason-list">
       ${exp.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join("")}
     </ul>
-    <h4>Raw links</h4>
-    <p><strong>Linear:</strong> ${escapeHtml(row.linear_issue_key || "")}</p>
-    <p><strong>GitHub:</strong> ${row.pr_url ? `<a href="${escapeAttr(row.pr_url)}" target="_blank">Merged PR</a>` : "No merged PR found"}</p>
-    <p><strong>Slack blocker:</strong> ${escapeHtml(row.latest_blocker || "None")}</p>
-    <p><strong>Support:</strong> ${escapeHtml(row.latest_support_subject || "None")}</p>
+    <h4>Source evidence</h4>
+    <div class="evidence-grid">
+      <div><span>Customer promise</span><strong>${escapeHtml(row.promised_date || "No date")}</strong></div>
+      <div><span>Linear/Jira</span><strong>${escapeHtml(row.linear_issue_key || "Missing")} / ${escapeHtml(row.engineering_status || "unknown")}</strong></div>
+      <div><span>GitHub</span><strong>${row.pr_url ? `<a href="${escapeAttr(row.pr_url)}" target="_blank" rel="noreferrer">Merged PR</a>` : "No merged PR found"}</strong></div>
+      <div><span>Slack</span><strong>${escapeHtml(row.latest_blocker || "No blocker message")}</strong></div>
+      <div><span>Intercom</span><strong>${escapeHtml(row.latest_support_subject || "No open support subject")}</strong></div>
+      <div><span>Stripe</span><strong>$${Number(row.paid_last_90_days || 0).toLocaleString()}</strong></div>
+      <div><span>LaunchDarkly</span><strong>${String(row.rollout_enabled).toLowerCase() === "true" ? "Enabled" : "Not enabled"}</strong></div>
+      <div><span>Query path</span><strong>${escapeHtml(health.coral_command || "coral/queries/commitment_risk.sql")}</strong></div>
+    </div>
   `;
 }
 

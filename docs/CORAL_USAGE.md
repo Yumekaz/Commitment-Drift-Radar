@@ -28,7 +28,7 @@ coral sql -f coral/queries/commitment_risk.sql --format json
 
 ## Demo mode vs live mode
 
-Demo mode exists only because hackathon judges may not have your private API credentials.
+Demo mode exists only because reviewers may not have your private API credentials.
 
 - Demo mode: uses local CSV data to show the product experience.
 - Live mode: calls the real Coral CLI.

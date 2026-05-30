@@ -11,6 +11,8 @@ from backend.risk import rank_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_DIR = ROOT / "static"
+CORE_CORAL_QUERY = "coral/queries/commitment_risk.sql"
+CORE_CORAL_COMMAND = f"coral sql -f {CORE_CORAL_QUERY} --format json"
 
 
 class AppHandler(SimpleHTTPRequestHandler):
@@ -38,6 +40,16 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "ok": True,
                 "mode": mode,
                 "coral_live": mode == "coral",
+                "coral_command": CORE_CORAL_COMMAND,
+                "sources": [
+                    "commitments.customer_promises",
+                    "linear.issues",
+                    "github.pulls",
+                    "slack.messages",
+                    "intercom.conversations",
+                    "stripe.invoices",
+                    "launchdarkly.feature_flags",
+                ],
                 "message": "Commitment Drift Radar API is running."
             })
             return
@@ -74,7 +86,7 @@ def load_risks():
     mode = os.getenv("COMMITMENT_RADAR_MODE", "demo").lower()
     if mode == "coral":
         client = CoralClient(ROOT)
-        rows = client.run_query_file("coral/queries/commitment_risk.sql")
+        rows = client.run_query_file(CORE_CORAL_QUERY)
     else:
         rows = DemoEngine(ROOT / "data" / "demo").compute_risk_rows()
 
@@ -83,8 +95,9 @@ def load_risks():
 
 def main():
     host = os.getenv("COMMITMENT_RADAR_HOST", "127.0.0.1")
-    port = int(os.getenv("COMMITMENT_RADAR_PORT", "8080"))
+    port = int(os.getenv("COMMITMENT_RADAR_PORT") or os.getenv("PORT", "8080"))
     server = ThreadingHTTPServer((host, port), AppHandler)
     print(f"Commitment Drift Radar running at http://{host}:{port}")
     print(f"Mode: {os.getenv('COMMITMENT_RADAR_MODE', 'demo')}")
+    print(f"Live Coral command: {CORE_CORAL_COMMAND}")
     server.serve_forever()

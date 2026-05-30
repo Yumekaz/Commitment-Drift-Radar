@@ -1,0 +1,2 @@
+# No third-party Python dependencies are required.
+# The demo server uses only the Python standard library.

@@ -1,0 +1,29 @@
+# Example placeholder source spec for customer promises.
+# Check the current Coral source spec reference before using this directly.
+# The simplest path for demos is to use Coral's file-backed CSV support
+# or keep this dataset as a bundled/local file source named `commitments`.
+
+name: commitments
+description: Customer promise ledger for Commitment Drift Radar
+tables:
+  customer_promises:
+    description: Promises made to customers and the IDs needed to join against tools.
+    columns:
+      - name: customer_name
+        type: string
+      - name: feature_key
+        type: string
+      - name: feature_name
+        type: string
+      - name: promised_date
+        type: date
+      - name: linear_issue_key
+        type: string
+      - name: github_repo
+        type: string
+      - name: slack_channel
+        type: string
+      - name: stripe_customer_id
+        type: string
+      - name: intercom_company_id
+        type: string

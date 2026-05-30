@@ -1,0 +1,8 @@
+company_id,state,updated_at,subject
+company_123,open,2026-05-29T07:00:00Z,Billing export missing from dashboard
+company_123,open,2026-05-29T08:10:00Z,Need CSV export for finance team
+company_123,open,2026-05-29T09:15:00Z,Follow-up on export promise
+company_456,open,2026-05-29T09:40:00Z,SSO rollout date?
+company_789,open,2026-05-29T11:30:00Z,API limits still hitting production
+company_789,open,2026-05-29T11:55:00Z,429 errors continue
+company_321,closed,2026-05-28T18:00:00Z,Audit export request

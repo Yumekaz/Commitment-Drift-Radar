@@ -1,0 +1,5 @@
+customer_id,status,amount_paid,paid_at
+cus_123,paid,1840000,2026-05-01
+cus_456,paid,950000,2026-05-08
+cus_789,paid,330000,2026-05-11
+cus_321,paid,2100000,2026-05-10

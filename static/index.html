@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Commitment Drift Radar</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Coral-powered enterprise agent</p>
+      <h1>Commitment Drift Radar</h1>
+      <p class="subtitle">Find customer promises drifting away from engineering reality before they become escalations.</p>
+    </div>
+    <div class="hero-card">
+      <span id="mode-pill">checking...</span>
+      <strong>Cross-source risk radar</strong>
+      <small>commitments + Linear + GitHub + Slack + Intercom + Stripe + LaunchDarkly</small>
+    </div>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <input id="search" placeholder="Search customers, features, issue IDs..." />
+      <select id="riskFilter">
+        <option value="">All risks</option>
+        <option>CRITICAL</option>
+        <option>HIGH</option>
+        <option>MEDIUM</option>
+        <option>LOW</option>
+      </select>
+    </section>
+
+    <section class="grid">
+      <div class="panel wide">
+        <div class="panel-header">
+          <h2>Risk board</h2>
+          <button id="refresh">Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Risk</th>
+                <th>Customer</th>
+                <th>Feature</th>
+                <th>Due</th>
+                <th>Engineering</th>
+                <th>Tickets</th>
+                <th>Revenue</th>
+                <th>Rollout</th>
+              </tr>
+            </thead>
+            <tbody id="riskRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <h2>Evidence pack</h2>
+        <div id="evidence" class="evidence muted">Click a row to inspect joined evidence.</div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+customer_name,feature_key,feature_name,promised_date,linear_issue_key,github_repo,slack_channel,stripe_customer_id,intercom_company_id
+Acme Corp,billing-export,Billing Export,2026-05-28,ENG-104,yumekaz/app,#billing,cus_123,company_123
+NovaCloud,sso-v2,SSO v2,2026-06-02,ENG-118,yumekaz/app,#auth,cus_456,company_456
+Zenith AI,api-limits,API Rate Limit Fix,2026-05-30,ENG-122,yumekaz/api,#api,cus_789,company_789
+OrbitBank,audit-log,Audit Log Export,2026-06-07,ENG-141,yumekaz/app,#security,cus_321,company_321

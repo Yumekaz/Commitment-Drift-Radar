@@ -1,0 +1,6 @@
+channel,created_at,user,text
+#billing,2026-05-29T10:00:00Z,alice,ENG-104 is blocked on export performance.
+#billing,2026-05-29T12:00:00Z,bob,Customer wants an update today.
+#auth,2026-05-29T14:00:00Z,carol,SSO v2 merged, waiting on feature flag rollout.
+#api,2026-05-29T15:00:00Z,dave,ENG-122 still stuck on rate-limit edge case.
+#security,2026-05-29T16:00:00Z,erin,Audit logs are ready for rollout.

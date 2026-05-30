@@ -1,0 +1,4 @@
+repo,title,head_ref,merged_at,html_url
+yumekaz/app,ENG-118 implement SSO v2,feature/ENG-118-sso-v2,2026-05-29T09:10:00Z,https://github.com/yumekaz/app/pull/118
+yumekaz/api,ENG-122 api rate limit fix,fix/ENG-122-limits,,https://github.com/yumekaz/api/pull/122
+yumekaz/app,ENG-141 audit log export,feature/ENG-141-audit-log,2026-05-29T12:02:00Z,https://github.com/yumekaz/app/pull/141

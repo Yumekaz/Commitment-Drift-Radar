@@ -164,6 +164,44 @@ main {
   white-space: nowrap;
 }
 
+.data-provenance {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.data-provenance span {
+  display: block;
+  color: #a8d8d3;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.data-provenance strong,
+.data-provenance small {
+  display: block;
+}
+
+.data-provenance strong {
+  margin-top: 6px;
+  color: #ffffff;
+}
+
+.data-provenance small {
+  margin-top: 6px;
+  color: #d7e8f6;
+  line-height: 1.45;
+}
+
+.secondary-button {
+  justify-self: start;
+  background: #ffffff;
+  color: var(--panel-strong);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 .source-list {
   grid-column: 1 / -1;
   display: flex;
@@ -178,6 +216,22 @@ main {
   color: #d7e8f6;
   font-size: 12px;
   padding: 6px 8px;
+}
+
+.sql-preview {
+  grid-column: 1 / -1;
+  max-height: 320px;
+  overflow: auto;
+  margin: 0;
+  padding: 14px;
+  background: #101827;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  color: #e6edf7;
+  font-family: ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
 }
 
 .toolbar {

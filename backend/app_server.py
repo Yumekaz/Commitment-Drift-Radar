@@ -36,11 +36,18 @@ class AppHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/api/health":
             mode = os.getenv("COMMITMENT_RADAR_MODE", "demo").lower()
+            coral_live = mode == "coral"
             self._send_json({
                 "ok": True,
                 "mode": mode,
-                "coral_live": mode == "coral",
+                "coral_live": coral_live,
                 "coral_command": CORE_CORAL_COMMAND,
+                "data_mode": "live Coral SQL" if coral_live else "sample CSV dataset",
+                "data_note": (
+                    "Rows are returned by the Coral CLI from configured sources."
+                    if coral_live
+                    else "Rows are computed from data/demo/*.csv so the public app can be reviewed without private credentials."
+                ),
                 "sources": [
                     "commitments.customer_promises",
                     "linear.issues",
@@ -52,6 +59,17 @@ class AppHandler(SimpleHTTPRequestHandler):
                 ],
                 "message": "Commitment Drift Radar API is running."
             })
+            return
+
+        if parsed.path == "/api/coral-query":
+            try:
+                self._send_json({
+                    "path": CORE_CORAL_QUERY,
+                    "command": CORE_CORAL_COMMAND,
+                    "sql": (ROOT / CORE_CORAL_QUERY).read_text(encoding="utf-8"),
+                })
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, status=500)
             return
 
         if parsed.path == "/api/risks":

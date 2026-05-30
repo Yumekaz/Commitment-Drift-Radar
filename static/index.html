@@ -46,7 +46,14 @@
         <h2>One SQL query joins customer promises to engineering, support, revenue, blockers, PRs, and rollout state.</h2>
       </div>
       <code id="coral-command">coral sql -f coral/queries/commitment_risk.sql --format json</code>
+      <div class="data-provenance">
+        <span>Current data mode</span>
+        <strong id="data-mode">checking...</strong>
+        <small id="data-note">Loading source provenance...</small>
+      </div>
+      <button id="toggle-sql" class="secondary-button" type="button">Show SQL joins</button>
       <div id="source-list" class="source-list"></div>
+      <pre id="sql-preview" class="sql-preview" hidden></pre>
     </section>
 
     <section class="toolbar">

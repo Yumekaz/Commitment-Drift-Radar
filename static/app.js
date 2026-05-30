@@ -6,17 +6,30 @@ async function loadHealth() {
   const data = await res.json();
   health = data;
   const pill = document.getElementById("mode-pill");
-  pill.textContent = data.coral_live ? "LIVE CORAL MODE" : "DEMO MODE";
+  pill.textContent = data.coral_live ? "LIVE CORAL MODE" : "DEMO MODE / SAMPLE DATA";
   document.getElementById("health-title").textContent = data.coral_live
     ? "Live Coral query path"
-    : "Demo data path";
+    : "Public sample dataset";
   document.getElementById("health-detail").textContent = data.coral_live
     ? "Backend is executing Coral SQL."
     : "Local CSVs simulate the joined Coral result for credential-free review.";
   document.getElementById("coral-command").textContent = data.coral_command;
+  document.getElementById("data-mode").textContent = data.data_mode || data.mode;
+  document.getElementById("data-note").textContent = data.data_note || "";
   document.getElementById("source-list").innerHTML = (data.sources || [])
     .map(source => `<span>${escapeHtml(source)}</span>`)
     .join("");
+}
+
+async function loadCoreQuery() {
+  const res = await fetch("/api/coral-query");
+  const data = await res.json();
+  const preview = document.getElementById("sql-preview");
+  if (data.error) {
+    preview.textContent = data.error;
+    return;
+  }
+  preview.textContent = data.sql;
 }
 
 async function loadRisks() {
@@ -127,6 +140,14 @@ function escapeAttr(value) {
 document.getElementById("refresh").addEventListener("click", loadRisks);
 document.getElementById("search").addEventListener("input", renderRows);
 document.getElementById("riskFilter").addEventListener("change", renderRows);
+document.getElementById("toggle-sql").addEventListener("click", async event => {
+  const preview = document.getElementById("sql-preview");
+  if (!preview.textContent) {
+    await loadCoreQuery();
+  }
+  preview.hidden = !preview.hidden;
+  event.currentTarget.textContent = preview.hidden ? "Show SQL joins" : "Hide SQL joins";
+});
 
 loadHealth();
 loadRisks();

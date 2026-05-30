@@ -77,6 +77,8 @@ data/demo/launchdarkly_flags.csv
 
 Important: demo mode simulates the joined Coral output so the product can be reviewed without private credentials. It is not presented as live Coral retrieval.
 
+The deployed public app is expected to show this sample dataset unless live Coral credentials are configured. The dashboard exposes the current data mode and the exact SQL query path so reviewers can tell whether they are looking at sample CSV output or live Coral output.
+
 ## Live Coral Mode
 
 Install and configure Coral, then add the sources required by the query.
